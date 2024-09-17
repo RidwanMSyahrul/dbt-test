@@ -1,0 +1,507 @@
+# Copyright 2022 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+selectors:
+
+  # All metrics
+  # Selector for executing all metrics in the metric library
+
+  - name: all_metrics
+    description: "All metrics from metric library"
+    default: true
+    definition:
+      union:
+        - method: path
+          value: models/metrics/
+          parents: true
+        - method: package
+          value: fhir_dbt_utils
+        - method: path
+          value: models/metadata/
+        - method: path
+          value: seeds/
+
+
+  # Pipeline transformations
+  # Selectors for pipeline transformations outside of execution of metrics
+
+  - name: fhir_resources
+    description: "Views for each FHIR resource"
+    definition:
+      union:
+        - method: package
+          value: fhir_dbt_utils
+
+  - name: metadata
+    description: "Project and metric metadata"
+    definition:
+      union:
+        - method: path
+          value: models/metadata/
+
+  - name: post_processing
+    description: "Metric post-processing transformations including metric views"
+    definition:
+      union:
+        - method: path
+          value: models/post_processing/
+          parents: true
+        - method: path
+          value: models/metric_views/
+
+  - name: metric_views
+    description: "Views that join the latest metric outputs with metric metadata and group by different levels of aggregation"
+    definition:
+      union:
+        - method: path
+          value: models/metric_views/
+
+  - name: patient_panel
+    description: "Transformations that summarize information about a patient"
+    definition:
+      union:
+        - method: path
+          value: models/summaries/patient_panel
+
+  - name: anomaly_detection
+    description: "Metric anomaly detection calculations"
+    definition:
+      union:
+        - method: path
+          value: models/anomaly_detection/
+
+
+  # Use case
+  # Selectors for executing batches of metrics suitable for different use-cases, such as data onboaring and monitoring
+
+  - name: testing
+    description: "Subset of metrics to include in tests"
+    definition:
+      union:
+        - method: selector
+          value: all_metrics
+        - exclude:
+            - method: config.meta.category
+              value: Active patients with resource
+            - method: fqn
+              value: encounter_count_by_start_date
+              value: active_encounters_midnight_census
+              value: allergyintolerance_reference_encounter_undefined
+              value: allergyintolerance_reference_patient_undefined
+              value: careteam_reference_encounter_undefined
+              value: careteam_reference_patient_undefined
+              value: careteam_reference_practitioner_undefined
+              value: composition_reference_binary_undefined
+              value: composition_reference_encounter_undefined
+              value: composition_reference_patient_undefined
+              value: composition_reference_practitioner_undefined
+              value: condition_reference_encounter_undefined
+              value: condition_reference_patient_undefined
+              value: diagnosticreport_reference_encounter_undefined
+              value: diagnosticreport_reference_observation_undefined
+              value: diagnosticreport_reference_patient_undefined
+              value: diagnosticreport_reference_practitioner_undefined
+              value: diagnosticreport_reference_servicerequest_undefined
+              value: encounter_reference_location_undefined
+              value: encounter_reference_patient_undefined
+              value: medicationadministration_reference_encounter_undefined
+              value: medicationadministration_reference_medication_undefined
+              value: medicationadministration_reference_medicationrequest_undefined
+              value: medicationadministration_reference_patient_undefined
+              value: medicationrequest_reference_encounter_undefined
+              value: medicationrequest_reference_medication_undefined
+              value: medicationrequest_reference_medicationrequest_undefined
+              value: medicationrequest_reference_patient_undefined
+              value: medicationrequest_reference_practitioner_undefined
+              value: medicationstatement_reference_encounter_undefined
+              value: medicationstatement_reference_medication_undefined
+              value: medicationstatement_reference_patient_undefined
+              value: observation_reference_encounter_undefined
+              value: observation_reference_patient_undefined
+              value: observation_reference_servicerequest_undefined
+              value: procedure_reference_encounter_undefined
+              value: procedure_reference_patient_undefined
+              value: procedure_reference_practitioner_undefined
+              value: servicerequest_reference_encounter_undefined
+              value: servicerequest_reference_patient_undefined
+              value: servicerequest_reference_practitioner_undefined
+              value: servicerequest_reference_servicerequest_undefined
+          parents: true
+
+  - name: onboarding
+    description: "Metrics helpful for evaluating a new FHIR dataset"
+    definition:
+      union:
+        - method: config.meta.category
+          value: Resource count
+        - method: config.meta.category
+          value: Referential integrity
+        - method: config.meta.category
+          value: Data completeness
+        - method: config.meta.category
+          value: Data distribution
+        - method: config.meta.category
+          value: Code system
+          parents: true
+        - method: path
+          value: models/metadata/
+        - method: path
+          value: seeds/
+
+
+  # Category
+  # Selectors for executing metrics within a given metric category
+
+  - name: category_resource_count
+    description: "Metrics that count the number of valid FHIR resources"
+    definition:
+      union:
+        - method: config.meta.category
+          value: Resource count
+          parents: true
+        - method: path
+          value: models/metadata/
+
+  - name: category_referential_integrity
+    description: "Metrics that evaluate references between FHIR resources"
+    definition:
+      union:
+        - method: config.meta.category
+          value: Referential integrity
+          parents: true
+        - method: path
+          value: models/metadata/
+
+  - name: category_encounter_daily
+    description: "Metrics quantifying patient encounters each day"
+    definition:
+      union:
+        - method: config.meta.category
+          value: Encounter daily
+          parents: true
+        - method: path
+          value: models/metadata/
+
+  - name: category_active_patients_with_resource
+    description: "Metrics calculating the proportion of active patients with at least one resource that day"
+    definition:
+      union:
+        - method: config.meta.category
+          value: Active patients with resource
+          parents: true
+        - method: path
+          value: models/metadata/
+
+  - name: category_data_completeness
+    description: "Metrics quantifying how often a particular data item is completed correctly"
+    definition:
+      union:
+        - method: config.meta.category
+          value: Data completeness
+          parents: true
+        - method: path
+          value: models/metadata/
+
+  - name: category_data_consistency
+    description: "Metrics quantifying how often data items contain conflicting or incompatible information over time"
+    definition:
+      union:
+        - method: config.meta.category
+          value: Data consistency
+          parents: true
+        - method: path
+          value: models/metadata/
+
+  - name: category_data_distribution
+    description: "Count metrics for which primary interest is the distribition of counts between dimension values"
+    definition:
+      union:
+        - method: config.meta.category
+          value: Data distribution
+          parents: true
+        - method: path
+          value: models/metadata/
+
+  - name: category_code_system
+    description: "Metrics that measure the proportion of coded fields that have data recorded in a particular coding system"
+    definition:
+      union:
+        - method: config.meta.category
+          value: Code system
+          parents: true
+        - method: path
+          value: models/metadata/
+
+
+  # FHIR resource
+  # Selectors for executing metrics with a given primary FHIR resource
+
+  - name: resource_allergyintolerance
+    description: "Metrics for which the primary resource evaluated is AllergyIntolerance"
+    definition:
+      union:
+        - method: config.meta.primary_resource
+          value: AllergyIntolerance
+          parents: true
+        - method: path
+          value: models/metadata/
+
+
+  - name: resource_binary
+    description: "Metrics for which the primary resource evaluated is Binary"
+    definition:
+      union:
+        - method: config.meta.primary_resource
+          value: Binary
+          parents: true
+        - method: path
+          value: models/metadata/
+
+  - name: resource_careteam
+    description: "Metrics for which the primary resource evaluated is CareTeam"
+    definition:
+      union:
+        - method: config.meta.primary_resource
+          value: CareTeam
+          parents: true
+        - method: path
+          value: models/metadata/
+
+  - name: resource_composition
+    description: "Metrics for which the primary resource evaluated is Composition"
+    definition:
+      union:
+        - method: config.meta.primary_resource
+          value: Composition
+          parents: true
+        - method: path
+          value: models/metadata/
+
+  - name: resource_condition
+    description: "Metrics for which the primary resource evaluated is Condition"
+    definition:
+      union:
+        - method: config.meta.primary_resource
+          value: Condition
+          parents: true
+        - method: path
+          value: models/metadata/
+
+  - name: resource_diagnosticreport
+    description: "Metrics for which the primary resource evaluated is DiagnosticReport"
+    definition:
+      union:
+        - method: config.meta.primary_resource
+          value: DiagnosticReport
+          parents: true
+        - method: path
+          value: models/metadata/
+
+  - name: resource_documentreference
+    description: "Metrics for which the primary resource evaluated is DocumentReference"
+    definition:
+      union:
+        - method: config.meta.primary_resource
+          value: DocumentReference
+          parents: true
+        - method: path
+          value: models/metadata/
+
+  - name: resource_encounter
+    description: "Metrics for which the primary resource evaluated is Encounter"
+    definition:
+      union:
+        - method: config.meta.primary_resource
+          value: Encounter
+          parents: true
+        - method: path
+          value: models/metadata/
+
+  - name: resource_imagingstudy
+    description: "Metrics for which the primary resource evaluated is ImagingStudy"
+    definition:
+      union:
+        - method: config.meta.primary_resource
+          value: ImagingStudy
+          parents: true
+        - method: path
+          value: models/metadata/
+
+  - name: resource_location
+    description: "Metrics for which the primary resource evaluated is Location"
+    definition:
+      union:
+        - method: config.meta.primary_resource
+          value: Location
+          parents: true
+        - method: path
+          value: models/metadata/
+
+  - name: resource_medication
+    description: "Metrics for which the primary resource evaluated is Medication"
+    definition:
+      union:
+        - method: config.meta.primary_resource
+          value: Medication
+          parents: true
+        - method: path
+          value: models/metadata/
+
+  - name: resource_medicationadministration
+    description: "Metrics for which the primary resource evaluated is MedicationAdministration"
+    definition:
+      union:
+        - method: config.meta.primary_resource
+          value: MedicationAdministration
+          parents: true
+        - method: path
+          value: models/metadata/
+
+  - name: resource_medicationdispense
+    description: "Metrics for which the primary resource evaluated is MedicationDispense"
+    definition:
+      union:
+        - method: config.meta.primary_resource
+          value: MedicationDispense
+          parents: true
+        - method: path
+          value: models/metadata/
+
+  - name: resource_medicationrequest
+    description: "Metrics for which the primary resource evaluated is MedicationRequest"
+    definition:
+      union:
+        - method: config.meta.primary_resource
+          value: MedicationRequest
+          parents: true
+        - method: path
+          value: models/metadata/
+
+  - name: resource_medicationstatement
+    description: "Metrics for which the primary resource evaluated is MedicationStatement"
+    definition:
+      union:
+        - method: config.meta.primary_resource
+          value: MedicationStatement
+          parents: true
+        - method: path
+          value: models/metadata/
+
+  - name: resource_observation
+    description: "Metrics for which the primary resource evaluated is Observation"
+    definition:
+      union:
+        - method: config.meta.primary_resource
+          value: Observation
+          parents: true
+        - method: path
+          value: models/metadata/
+
+  - name: resource_organization
+    description: "Metrics for which the primary resource evaluated is Organization"
+    definition:
+      union:
+        - method: config.meta.primary_resource
+          value: Organization
+          parents: true
+        - method: path
+          value: models/metadata/
+
+  - name: resource_patient
+    description: "Metrics for which the primary resource evaluated is Patient"
+    definition:
+      union:
+        - method: config.meta.primary_resource
+          value: Patient
+          parents: true
+        - method: path
+          value: models/metadata/
+
+  - name: resource_person
+    description: "Metrics for which the primary resource evaluated is Person"
+    definition:
+      union:
+        - method: config.meta.primary_resource
+          value: Person
+          parents: true
+        - method: path
+          value: models/metadata/
+
+  - name: resource_practitioner
+    description: "Metrics for which the primary resource evaluated is Practitioner"
+    definition:
+      union:
+        - method: config.meta.primary_resource
+          value: Practitioner
+          parents: true
+        - method: path
+          value: models/metadata/
+
+  - name: resource_practitionerrole
+    description: "Metrics for which the primary resource evaluated is PractitionerRole"
+    definition:
+      union:
+        - method: config.meta.primary_resource
+          value: PractitionerRole
+          parents: true
+        - method: path
+          value: models/metadata/
+
+  - name: resource_procedure
+    description: "Metrics for which the primary resource evaluated is Procedure"
+    definition:
+      union:
+        - method: config.meta.primary_resource
+          value: Procedure
+          parents: true
+        - method: path
+          value: models/metadata/
+
+  - name: resource_servicerequest
+    description: "Metrics for which the primary resource evaluated is ServiceRequest"
+    definition:
+      union:
+        - method: config.meta.primary_resource
+          value: ServiceRequest
+          parents: true
+        - method: path
+          value: models/metadata/
+
+  - name: resource_patient_encounter_observation
+    description: "Metrics for which the primary resource evaluated is one of Patient, Encounter or Observation"
+    definition:
+      union:
+        - method: selector
+          value: resource_patient
+        - method: selector
+          value: resource_encounter
+        - method: selector
+          value: resource_observation
+        - method: path
+          value: models/metadata/
+
+
+  # CROSS DB
+  # Selectors related to Apache Spark compatibility.
+
+  - name: succeed_on_spark
+    description: Metrics which were tested to work fine on Spark with Synthea data.
+    definition:
+      union:
+        - method: path
+          value: models/metrics
+          parents: true
+        - exclude:
+          - method: tag
+            value: spark_todo
