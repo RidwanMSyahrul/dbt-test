@@ -27,11 +27,11 @@ require-dbt-version: '>=1.3.0'
 vars:
 
   # Organization name
-  organization: "Synthea"  # Name of the organization or business unit which owns the FHIR data. Used for titles in the analytics reports. [string]
+  organization: "SID"  # Name of the organization or business unit which owns the FHIR data. Used for titles in the analytics reports. [string]
 
   # FHIR data location
-  database: "bigquery-public-data"  # Name of the Google Cloud project that contains the BigQuery data. Used to connect to your FHIR data. [string]
-  schema: "fhir_synthea"  # Name of the BigQuery dataset storing the FHIR data. Used to connect to your FHIR data. [string]
+  database: "dbt-analytics-435502"  # Name of the Google Cloud project that contains the BigQuery data. Used to connect to your FHIR data. [string]
+  schema: "dbt_analytics_435502_fhir_dbt_test"  # Name of the BigQuery dataset storing the FHIR data. Used to connect to your FHIR data. [string]
 
   # FHIR data format
   fhir_version: "STU3"  # Version of FHIR that your data conforms to. Options: "STU3"; "R4". [string]
